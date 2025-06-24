@@ -61,7 +61,7 @@ The server will start on `http://localhost:8080`.
 ### API Documentation
 
 Swagger UI is available at:  
-`https://app.swaggerhub.com/apis-docs/dzhisl/license-manager_api/1.0`
+`http://localhost:8080/swagger/index.html`
 
 ## Usage
 
@@ -86,7 +86,7 @@ Require `X-API-Key` header for authentication.
 - `POST /api/user/:user_id/telegram` — Bind Telegram account
 - `DELETE /api/user/:user_id` — Delete user
 
-See [Swagger docs](http://localhost:8080/swagger/index.html) for full request/response schemas.
+See [Public Swagger docs](https://app.swaggerhub.com/apis-docs/dzhisl/license-manager_api/1.0) for full request/response schemas.
 
 ## Data Model
 
