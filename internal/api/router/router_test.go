@@ -48,7 +48,7 @@ func TestAuthorization(t *testing.T) {
 	userJson, err := json.Marshal(exampleUser)
 	assert.NoError(t, err)
 
-	req, _ := http.NewRequest("POST", "/api/createUser", strings.NewReader(string(userJson)))
+	req, _ := http.NewRequest("POST", "/api/user/create", strings.NewReader(string(userJson)))
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, 401, w.Code)
@@ -66,7 +66,7 @@ func TestCreateUser(t *testing.T) {
 	body, err := json.Marshal(exampleUser)
 	assert.NoError(t, err)
 
-	req, err := http.NewRequest("POST", "/api/createUser", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", "/api/user/create", bytes.NewBuffer(body))
 	assert.NoError(t, err)
 
 	req.Header.Set("Content-Type", "application/json")

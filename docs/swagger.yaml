@@ -1,0 +1,573 @@
+basePath: /api
+definitions:
+  license.verifyLicenseRequest:
+    properties:
+      hwid:
+        type: string
+      license:
+        type: string
+    required:
+    - hwid
+    - license
+    type: object
+  storage.License:
+    properties:
+      devices:
+        items:
+          type: string
+        type: array
+      expiresAt:
+        type: integer
+      issuedAt:
+        type: integer
+      key:
+        type: string
+      maxActivations:
+        type: integer
+      status:
+        $ref: '#/definitions/storage.LicenseStatus'
+    type: object
+  storage.LicenseStatus:
+    enum:
+    - frozen
+    - active
+    - burned
+    type: string
+    x-enum-varnames:
+    - Frozen
+    - Active
+    - Burned
+  storage.User:
+    properties:
+      createdAt:
+        type: integer
+      discordId:
+        type: integer
+      id:
+        type: integer
+      license:
+        $ref: '#/definitions/storage.License'
+      telegramId:
+        type: integer
+    type: object
+  user.addDeviceRequest:
+    properties:
+      hwid:
+        type: string
+    required:
+    - hwid
+    type: object
+  user.bindDiscordRequest:
+    properties:
+      discord_id:
+        type: integer
+    required:
+    - discord_id
+    type: object
+  user.bindTelegramRequest:
+    properties:
+      telegram_id:
+        type: integer
+    required:
+    - telegram_id
+    type: object
+  user.changeLicenseStatusRequest:
+    properties:
+      status:
+        $ref: '#/definitions/storage.LicenseStatus'
+    required:
+    - status
+    type: object
+  user.createUserRequest:
+    properties:
+      discord_id:
+        type: integer
+      expires_at:
+        type: integer
+      max_activations:
+        type: integer
+      telegram_id:
+        type: integer
+    required:
+    - expires_at
+    - max_activations
+    type: object
+  user.createUserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/storage.User'
+    type: object
+  user.getUserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/storage.User'
+    type: object
+  user.internalErrResponse:
+    properties:
+      error:
+        example: internal server error
+        type: string
+    type: object
+  user.invalidBodyErrResponse:
+    properties:
+      error:
+        example: invalid request
+        type: string
+    type: object
+  user.removeDeviceRequest:
+    properties:
+      hwid:
+        type: string
+    required:
+    - hwid
+    type: object
+  user.renewLicenseRequest:
+    properties:
+      expires_at:
+        type: integer
+    required:
+    - expires_at
+    type: object
+  user.statusResponse:
+    properties:
+      status:
+        example: success
+        type: string
+    type: object
+  user.updateHwidLimitRequest:
+    properties:
+      max_activations:
+        type: integer
+    required:
+    - max_activations
+    type: object
+info:
+  contact: {}
+  description: API for managing user licenses.
+  title: License Manager API
+  version: "1.0"
+paths:
+  /license/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify license by license string and HWID
+      parameters:
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/license.verifyLicenseRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: Verify license
+      tags:
+      - license
+  /ping:
+    get:
+      description: Ping pong
+      responses: {}
+      summary: Simple ping endpoint
+      tags:
+      - user
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves user by telegram_id, discord_id, or license (one is required).
+      parameters:
+      - description: Telegram ID
+        in: query
+        name: telegram_id
+        type: integer
+      - description: Discord ID
+        in: query
+        name: discord_id
+        type: integer
+      - description: License key
+        in: query
+        name: license
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.getUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user
+      tags:
+      - user
+  /user/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by user_id
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete user
+      tags:
+      - user
+  /user/{user_id}/device:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a device HWID from user device list
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.removeDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove HWID from user
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: Add a device HWID to user device list
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.addDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Bind HWID to user
+      tags:
+      - user
+  /user/{user_id}/devices/reset:
+    post:
+      consumes:
+      - application/json
+      description: Remove all device HWIDs from user device list
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Reset all HWIDs for user
+      tags:
+      - user
+  /user/{user_id}/discord:
+    post:
+      consumes:
+      - application/json
+      description: Associates a Discord ID with the user specified by user_id in the
+        URL.
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.bindDiscordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Bind Discord to user
+      tags:
+      - user
+  /user/{user_id}/license/hwid_limit:
+    post:
+      consumes:
+      - application/json
+      description: Update the maximum number of HWIDs (devices) for a user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.updateHwidLimitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update HWID limit
+      tags:
+      - user
+  /user/{user_id}/license/renew:
+    post:
+      consumes:
+      - application/json
+      description: Renew the license for a user by user_id
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.renewLicenseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Renew license
+      tags:
+      - user
+  /user/{user_id}/license/status:
+    post:
+      consumes:
+      - application/json
+      description: Changes license status of user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: 'payload enum: frozen, active, burned'
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.changeLicenseStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Change license status
+      tags:
+      - user
+  /user/{user_id}/telegram:
+    post:
+      consumes:
+      - application/json
+      description: Associates a Telegram ID with the user specified by user_id in
+        the URL.
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.bindTelegramRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Bind Telegram to user
+      tags:
+      - user
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user with either a Telegram ID or Discord ID. Requires
+        max activations and expiration timestamp in seconds.
+      parameters:
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.createUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/user.invalidBodyErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/user.internalErrResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new user
+      tags:
+      - user
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
+swagger: "2.0"

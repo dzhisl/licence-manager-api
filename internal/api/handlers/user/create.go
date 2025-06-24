@@ -19,9 +19,24 @@ type createUserRequest struct {
 	TelegramId     int `json:"telegram_id"`
 	DiscordId      int `json:"discord_id"`
 	MaxActivations int `json:"max_activations" binding:"required"`
-	Expiration     int `json:"expires_at"  binding:"required"`
+	Expiration     int `json:"expires_at" binding:"required"`
 }
 
+type createUserResponse struct {
+	User storage.User `json:"user"`
+}
+
+// @Summary Create a new user
+// @Description Creates a new user with either a Telegram ID or Discord ID. Requires max activations and expiration timestamp in seconds.
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param request body createUserRequest true "payload"
+// @Success 200 {object} createUserResponse
+// @Failure 400 {object} invalidBodyErrResponse
+// @Failure 500 {object} internalErrResponse
+// @Security ApiKeyAuth
+// @Router /user/create [post]
 func CreateUserHandler(c *gin.Context) {
 	conn := storage.GetConnector()
 	ctx := c.Request.Context()
@@ -61,9 +76,8 @@ func CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"user":   user,
+	c.JSON(http.StatusOK, createUserResponse{
+		User: user,
 	})
 }
 

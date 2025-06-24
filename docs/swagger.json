@@ -1,0 +1,886 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for managing user licenses.",
+        "title": "License Manager API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {
+        "/license/verify": {
+            "post": {
+                "description": "Verify license by license string and HWID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "license"
+                ],
+                "summary": "Verify license",
+                "parameters": [
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/license.verifyLicenseRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Ping pong",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Simple ping endpoint",
+                "responses": {}
+            }
+        },
+        "/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves user by telegram_id, discord_id, or license (one is required).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Telegram ID",
+                        "name": "telegram_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Discord ID",
+                        "name": "discord_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "License key",
+                        "name": "license",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.getUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new user with either a Telegram ID or Discord ID. Requires max activations and expiration timestamp in seconds.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Create a new user",
+                "parameters": [
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.createUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.createUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a user by user_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/device": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add a device HWID to user device list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Bind HWID to user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.addDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Remove a device HWID from user device list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Remove HWID from user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.removeDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/devices/reset": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Remove all device HWIDs from user device list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Reset all HWIDs for user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/discord": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Associates a Discord ID with the user specified by user_id in the URL.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Bind Discord to user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.bindDiscordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/license/hwid_limit": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update the maximum number of HWIDs (devices) for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update HWID limit",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.updateHwidLimitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/license/renew": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Renew the license for a user by user_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Renew license",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.renewLicenseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/license/status": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Changes license status of user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change license status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload enum: frozen, active, burned",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.changeLicenseStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{user_id}/telegram": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Associates a Telegram ID with the user specified by user_id in the URL.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Bind Telegram to user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.bindTelegramRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.statusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/user.invalidBodyErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/user.internalErrResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "license.verifyLicenseRequest": {
+            "type": "object",
+            "required": [
+                "hwid",
+                "license"
+            ],
+            "properties": {
+                "hwid": {
+                    "type": "string"
+                },
+                "license": {
+                    "type": "string"
+                }
+            }
+        },
+        "storage.License": {
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "expiresAt": {
+                    "type": "integer"
+                },
+                "issuedAt": {
+                    "type": "integer"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "maxActivations": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/storage.LicenseStatus"
+                }
+            }
+        },
+        "storage.LicenseStatus": {
+            "type": "string",
+            "enum": [
+                "frozen",
+                "active",
+                "burned"
+            ],
+            "x-enum-varnames": [
+                "Frozen",
+                "Active",
+                "Burned"
+            ]
+        },
+        "storage.User": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
+                "discordId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "license": {
+                    "$ref": "#/definitions/storage.License"
+                },
+                "telegramId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.addDeviceRequest": {
+            "type": "object",
+            "required": [
+                "hwid"
+            ],
+            "properties": {
+                "hwid": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.bindDiscordRequest": {
+            "type": "object",
+            "required": [
+                "discord_id"
+            ],
+            "properties": {
+                "discord_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.bindTelegramRequest": {
+            "type": "object",
+            "required": [
+                "telegram_id"
+            ],
+            "properties": {
+                "telegram_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.changeLicenseStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/storage.LicenseStatus"
+                }
+            }
+        },
+        "user.createUserRequest": {
+            "type": "object",
+            "required": [
+                "expires_at",
+                "max_activations"
+            ],
+            "properties": {
+                "discord_id": {
+                    "type": "integer"
+                },
+                "expires_at": {
+                    "type": "integer"
+                },
+                "max_activations": {
+                    "type": "integer"
+                },
+                "telegram_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.createUserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/storage.User"
+                }
+            }
+        },
+        "user.getUserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/storage.User"
+                }
+            }
+        },
+        "user.internalErrResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "internal server error"
+                }
+            }
+        },
+        "user.invalidBodyErrResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "invalid request"
+                }
+            }
+        },
+        "user.removeDeviceRequest": {
+            "type": "object",
+            "required": [
+                "hwid"
+            ],
+            "properties": {
+                "hwid": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.renewLicenseRequest": {
+            "type": "object",
+            "required": [
+                "expires_at"
+            ],
+            "properties": {
+                "expires_at": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.statusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "user.updateHwidLimitRequest": {
+            "type": "object",
+            "required": [
+                "max_activations"
+            ],
+            "properties": {
+                "max_activations": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        }
+    }
+}

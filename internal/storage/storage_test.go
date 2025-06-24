@@ -21,9 +21,9 @@ var (
 		License: License{
 			Key:            "initialKey",
 			MaxActivations: 3,
-			Devices: []Device{
-				{HWID: "device_1"},
-				{HWID: "device_2"},
+			Devices: []string{
+				"device_1",
+				"device_2",
 			},
 			IssuedAt:  Timestamp(1234567890),
 			ExpiresAt: Timestamp(1234567890 + 30*24*3600),
@@ -89,8 +89,8 @@ func TestUserFlow(t *testing.T) {
 			t.Fatalf("devices length doesn't match: want 3 got: %d", len(userObj.License.Devices))
 		}
 
-		if strings.Compare(userObj.License.Devices[2].HWID, "device_3") != 0 {
-			t.Errorf("device name doesn't match: device_3 %s", userObj.License.Devices[2].HWID)
+		if strings.Compare(userObj.License.Devices[2], "device_3") != 0 {
+			t.Errorf("device name doesn't match: device_3 %s", userObj.License.Devices[2])
 		}
 	})
 

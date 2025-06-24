@@ -120,7 +120,7 @@ func (c *Connector) AddHwidSession(ctx context.Context, userId int, hwid string)
 		return fmt.Errorf("user have maximum allowed activations: %d", user.License.MaxActivations)
 	}
 
-	user.License.Devices = append(user.License.Devices, Device{HWID: hwid})
+	user.License.Devices = append(user.License.Devices, hwid)
 	update := bson.M{"$set": bson.M{"license.devices": user.License.Devices}}
 	res, err := c.userCollection.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -140,9 +140,9 @@ func (c *Connector) DeleteHwidSession(ctx context.Context, userId int, hwid stri
 		return err
 	}
 
-	var newHwidSessions []Device
+	var newHwidSessions []string
 	for _, session := range user.License.Devices {
-		if session.HWID != hwid {
+		if session != hwid {
 			newHwidSessions = append(newHwidSessions, session)
 		}
 	}

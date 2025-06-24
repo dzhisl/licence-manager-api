@@ -11,6 +11,23 @@ import (
 	"go.uber.org/zap"
 )
 
+type getUserResponse struct {
+	User storage.User `json:"user"`
+}
+
+// @Summary Get user
+// @Description Retrieves user by telegram_id, discord_id, or license (one is required).
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param telegram_id query int false "Telegram ID"
+// @Param discord_id query int false "Discord ID"
+// @Param license query string false "License key"
+// @Success 200 {object} getUserResponse
+// @Failure 400 {object} invalidBodyErrResponse
+// @Failure 500 {object} internalErrResponse
+// @Security ApiKeyAuth
+// @Router /user [get]
 func GetUserHandler(c *gin.Context) {
 	conn := storage.GetConnector()
 	ctx := c.Request.Context()
@@ -50,8 +67,7 @@ func GetUserHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-		"user":   user,
+	c.JSON(http.StatusOK, getUserResponse{
+		User: *user,
 	})
 }

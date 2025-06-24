@@ -20,14 +20,10 @@ type User struct {
 type License struct {
 	Key            string        `bson:"key" json:"key"`
 	MaxActivations int           `bson:"maxActivations" json:"maxActivations"`
-	Devices        []Device      `bson:"devices" json:"devices"`
+	Devices        []string      `bson:"devices" json:"devices"`
 	IssuedAt       Timestamp     `bson:"issuedAt" json:"issuedAt"`
 	ExpiresAt      Timestamp     `bson:"expiresAt" json:"expiresAt"`
 	Status         LicenseStatus `bson:"status" json:"status"`
-}
-
-type Device struct {
-	HWID string `bson:"hwid" json:"hwid"`
 }
 
 type GetUserParams struct {
