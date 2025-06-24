@@ -61,7 +61,7 @@ The server will start on `http://localhost:8080`.
 ### API Documentation
 
 Swagger UI is available at:  
-`http://localhost:8080/swagger/index.html`
+`https://app.swaggerhub.com/apis-docs/dzhisl/license-manager_api/1.0`
 
 ## Usage
 
