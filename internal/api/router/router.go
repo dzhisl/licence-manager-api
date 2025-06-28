@@ -6,17 +6,18 @@ import (
 	"github.com/dzhisl/license-api/internal/api/handlers/user"
 	"github.com/dzhisl/license-api/internal/api/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func InitRouter() *gin.Engine {
-	// Disable Console Color
-	// gin.DisableConsoleColor()
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	r.Use(middleware.RequestIDMiddleware())
-	// Register Swagger UI endpoint
-	// Note: `PersistAuthorization: true` ensures that the X-API-Key header is preserved after page refreshes.
+	middleware.PrometheusInit()
+	limiter := middleware.NewClientLimiter(1, 5) // 1 req/sec, burst up to 5
+
+	r.Use(middleware.RequestIDMiddleware(), middleware.TrackMetrics(), middleware.RateLimitMiddleware(limiter))
 	r.GET("/swagger/*any", ginSwagger.CustomWrapHandler(&ginSwagger.Config{
 		URL:                  "/swagger/doc.json", // URL to the generated swagger.json
 		DocExpansion:         "none",
@@ -31,6 +32,7 @@ func InitRouter() *gin.Engine {
 }
 
 func registerPublicRoutes(r *gin.RouterGroup) {
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	r.GET("ping", ping.PingHandler)
 	r.POST("license/verify", license.VerifyLicenseHandler)

@@ -13,7 +13,6 @@ import (
 	"github.com/dzhisl/license-api/internal/storage"
 	"github.com/dzhisl/license-api/pkg/config"
 	"github.com/dzhisl/license-api/pkg/logger"
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/test-go/testify/assert"
 )
@@ -24,7 +23,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	gin.SetMode(gin.TestMode)
 
 	ctx = context.TODO()
 	config.InitConfig()
