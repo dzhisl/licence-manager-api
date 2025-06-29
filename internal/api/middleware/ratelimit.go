@@ -38,6 +38,12 @@ func (cl *ClientLimiter) getLimiter(ip string) *rate.Limiter {
 
 func RateLimitMiddleware(cl *ClientLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip rate limiting for /api/metrics
+		if c.Request.URL.Path == "/api/metrics" {
+			c.Next()
+			return
+		}
+
 		ip := clientIP(c)
 		limiter := cl.getLimiter(ip)
 

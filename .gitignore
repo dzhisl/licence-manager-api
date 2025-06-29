@@ -1,3 +1,4 @@
 .DS_Store
 .env
 k6.js
+cmd/loader

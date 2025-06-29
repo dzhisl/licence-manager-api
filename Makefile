@@ -25,3 +25,6 @@ test-storage:
 
 swagger:
 	swag init -q -g cmd/server/main.go
+
+load-test:
+	k6 run k6/k6.js

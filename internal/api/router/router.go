@@ -15,9 +15,8 @@ func InitRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	middleware.PrometheusInit()
-	limiter := middleware.NewClientLimiter(1, 5) // 1 req/sec, burst up to 5
 
-	r.Use(middleware.RequestIDMiddleware(), middleware.TrackMetrics(), middleware.RateLimitMiddleware(limiter))
+	r.Use(middleware.RequestIDMiddleware(), middleware.TrackMetrics())
 	r.GET("/swagger/*any", ginSwagger.CustomWrapHandler(&ginSwagger.Config{
 		URL:                  "/swagger/doc.json", // URL to the generated swagger.json
 		DocExpansion:         "none",
@@ -26,19 +25,21 @@ func InitRouter() *gin.Engine {
 
 	RouterGroup := r.Group("/api")
 
-	registerPublicRoutes(RouterGroup)
-	registerPrivateRoutes(RouterGroup)
+	registerPublicRoutes(*RouterGroup)
+	registerPrivateRoutes(*RouterGroup)
 	return r
 }
 
-func registerPublicRoutes(r *gin.RouterGroup) {
+func registerPublicRoutes(r gin.RouterGroup) {
+	limiter := middleware.NewClientLimiter(1, 5) // 1 req/sec, burst up to 5
+	r.Use(middleware.RateLimitMiddleware(limiter))
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	r.GET("ping", ping.PingHandler)
 	r.POST("license/verify", license.VerifyLicenseHandler)
 }
 
-func registerPrivateRoutes(r *gin.RouterGroup) {
+func registerPrivateRoutes(r gin.RouterGroup) {
 	r.Use(middleware.AdminAuthMiddleware)
 	r.POST("user/create", user.CreateUserHandler)
 	r.GET("user", user.GetUserHandler)

@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/dzhisl/license-api/pkg/config"
 	"github.com/dzhisl/license-api/pkg/logger"
@@ -37,10 +38,18 @@ func InitStorage(ctx context.Context) {
 	}
 
 	userColl := client.Database(databaseName).Collection(collectionName)
-	err = userColl.Database().Client().Ping(context.Background(), nil)
-	if err != nil {
-		logger.Fatal(ctx, "failed to ping mongoDB", zap.Error(err))
+	for i := 0; i < 3; i++ {
+		err = userColl.Database().Client().Ping(context.Background(), nil)
+		if err != nil {
+			logger.Warn(ctx, "failed to ping mongoDB", zap.Error(err))
+			time.Sleep(5 * time.Second)
+			continue
+		}
 	}
+	if err != nil {
+		logger.Fatal(ctx, "failed to ping mongoDB after 3 attempts")
+	}
+
 	connector.userCollection = userColl
 
 	logger.Info(ctx, "connected to MONGO DB")

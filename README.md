@@ -29,6 +29,7 @@ A robust RESTful API for managing user licenses, built with Go, Gin, and MongoDB
 - Go 1.24 or newer
 - MongoDB instance (local or remote)
 - (Optional) [swag](https://github.com/swaggo/swag) for generating Swagger docs
+- (Optional) [Docker](https://www.docker.com/) and [docker-compose](https://docs.docker.com/compose/) for running the full stack (API, MongoDB, Prometheus, Grafana)
 
 ### Configuration
 
@@ -50,7 +51,19 @@ cd licence-manager-api
 go mod tidy
 ```
 
-### Running the API
+#### Running with Docker Compose
+
+To run the API together with MongoDB, Prometheus, Grafana, and MongoDB Exporter:
+
+```sh
+docker-compose up --build
+```
+
+- API: http://localhost:8080
+- Grafana: http://localhost:3000 (default password: admin)
+- Prometheus: http://localhost:9090
+
+### Running the API (standalone)
 
 ```sh
 make run
@@ -69,6 +82,7 @@ Swagger UI is available at:
 
 - `POST /api/license/verify` — Verify a license by key and HWID
 - `GET /api/ping` — Health check
+- `GET /api/metrics` — Prometheus metrics endpoint (for monitoring)
 
 ### Private (Admin) Endpoints
 
@@ -160,3 +174,39 @@ Contributions are welcome! Please open issues or submit pull requests.
 ## Contacts
 
 telegram: [@isdzh](http://t.me/isdzh)
+
+## Monitoring & Observability
+
+This project includes built-in monitoring and observability using Prometheus and Grafana.
+
+- **Prometheus Metrics**: The API exposes metrics at `/api/metrics`, including:
+  - `requests_total`: Total number of requests processed, labeled by path and status.
+  - `requests_errors_total`: Total number of error requests processed.
+  - `requests_success_total`: Total number of successful requests (status 200/201).
+- **Rate Limiting**: All public endpoints are protected by a rate limiter (default: 1 request/sec, burst up to 5 per client IP). Exceeding the limit returns HTTP 429.
+- **MongoDB Exporter**: MongoDB metrics are exposed at port 9216 for Prometheus scraping.
+- **Grafana Dashboards**: Pre-configured dashboards for API and MongoDB metrics are available at `http://localhost:3000` (default password: admin).
+
+#### Prometheus Configuration
+
+Prometheus is configured (see `internal/prometheus/prometheus.yml`) to scrape both the API and MongoDB exporter:
+
+```yaml
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: "prometheus-go"
+    metrics_path: "/api/metrics"
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+  - job_name: "mongodb"
+    static_configs:
+      - targets: ["mongodb-exporter:9216"]
+```
+
+#### Accessing Grafana
+
+- Visit [http://localhost:3000](http://localhost:3000)
+- Login with username `admin` and password `admin` (default)
+- Add Prometheus as a data source (if not already configured)
+- Import the dashboard from `grafana/dashboard.json` for ready-to-use API and DB monitoring

@@ -23,11 +23,20 @@ var (
 		},
 		[]string{"path", "status"},
 	)
+
+	SuccessCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "requests_success_total",
+			Help: "Total number of request with 200 status",
+		},
+		[]string{"path", "status"},
+	)
 )
 
 func PrometheusInit() {
 	prometheus.MustRegister(RequestCount)
 	prometheus.MustRegister(ErrorCount)
+	prometheus.MustRegister(SuccessCount)
 }
 
 func TrackMetrics() gin.HandlerFunc {
@@ -46,6 +55,9 @@ func TrackMetrics() gin.HandlerFunc {
 		// Optionally log errors if status >= 400
 		if c.Writer.Status() >= 400 {
 			ErrorCount.WithLabelValues(path, status).Inc()
+		}
+		if c.Writer.Status() == 200 || c.Writer.Status() == 201 {
+			SuccessCount.WithLabelValues(path, status).Inc()
 		}
 
 	}
