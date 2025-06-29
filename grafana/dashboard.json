@@ -85,6 +85,103 @@
               "viz": false
             },
             "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(request_duration_seconds_sum{path!=\"/api/metrics\"}[1m])) by (path)\n/\nsum(rate(request_duration_seconds_count{path!=\"/api/metrics\"}[1m])) by (path)\n",
+          "legendFormat": "{{path}}",
+          "range": true,
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          }
+        }
+      ],
+      "title": "Request Duration",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
             "lineInterpolation": "smooth",
             "lineStyle": {
               "fill": "solid"
@@ -124,7 +221,7 @@
         "h": 14,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 14
       },
       "id": 3,
       "options": {
@@ -223,7 +320,7 @@
         "h": 14,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 14
       },
       "id": 4,
       "options": {
@@ -287,7 +384,7 @@
         "h": 15,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 28
       },
       "id": 2,
       "options": {
@@ -408,7 +505,7 @@
         "h": 15,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 28
       },
       "id": 1,
       "options": {
@@ -448,13 +545,13 @@
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "License Api Dashboard",
   "uid": "d916596c-504f-45a1-8901-2a851abd3d68",
-  "version": 12,
+  "version": 3,
   "weekStart": ""
 }

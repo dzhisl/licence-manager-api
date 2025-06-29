@@ -1,15 +1,15 @@
+version: "3.8"
+
 services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./internal/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
       - monitoring
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -35,21 +35,44 @@ services:
     networks:
       - monitoring
 
-  mongodb-exporter:
-      image: 'percona/mongodb_exporter:0.40.0'
-      container_name: mongodb-exporter
-      environment:
-        MONGODB_URI: "mongodb://exporter:exporterpass@mongo:27017/?authSource=admin"
-      command: ["--collect-all", "--compatible-mode", "--discovering-mode"]
-      depends_on:
-        - mongo
-      ports:
-        - "9216:9216"
-      restart: 
-        unless-stopped
-      networks:
-        - monitoring
+  mongo-init:
+    image: mongo:6
+    container_name: mongo-init
+    depends_on:
+      - mongo
+    entrypoint: >
+      bash -c "
+      echo 'Waiting for MongoDB to be ready...';
+      until mongosh --host mongo -u mongo -p mysecretpassword --authenticationDatabase admin --eval 'db.runCommand({ ping: 1 })'; do
+        sleep 2;
+      done;
+      echo 'Creating exporter user...';
+      mongosh --host mongo -u mongo -p mysecretpassword --authenticationDatabase admin --eval '
+        db.getSiblingDB(\"admin\").createUser({
+          user: \"exporter\",
+          pwd: \"exporterpass\",
+          roles: [ { role: \"clusterMonitor\", db: \"admin\" } ]
+        });
+      ';
+      echo 'User created successfully.';
+      "
+    networks:
+      - monitoring
+    restart: "no"
 
+  mongodb-exporter:
+    image: "percona/mongodb_exporter:0.40.0"
+    container_name: mongodb-exporter
+    environment:
+      MONGODB_URI: "mongodb://exporter:exporterpass@mongo:27017/?authSource=admin"
+    command: ["--collect-all", "--compatible-mode", "--discovering-mode"]
+    depends_on:
+      - mongo-init
+    ports:
+      - "9216:9216"
+    restart: unless-stopped
+    networks:
+      - monitoring
 
   license-api:
     build: .
@@ -59,8 +82,6 @@ services:
       - mongo
     networks:
       - monitoring
-    labels: { logging: "promtail" }
-
 
 networks:
   monitoring:

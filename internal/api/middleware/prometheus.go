@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,6 +13,14 @@ var (
 		prometheus.CounterOpts{
 			Name: "requests_total",
 			Help: "Total number of requests processed by the server.",
+		},
+		[]string{"path", "status"},
+	)
+	RequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "request_duration_seconds",
+			Help:    "Duration of HTTP requests.",
+			Buckets: prometheus.DefBuckets,
 		},
 		[]string{"path", "status"},
 	)
@@ -37,10 +46,12 @@ func PrometheusInit() {
 	prometheus.MustRegister(RequestCount)
 	prometheus.MustRegister(ErrorCount)
 	prometheus.MustRegister(SuccessCount)
+	prometheus.MustRegister(RequestDuration)
 }
 
 func TrackMetrics() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		start := time.Now()
 		c.Next()
 
 		path := c.FullPath()
@@ -59,6 +70,8 @@ func TrackMetrics() gin.HandlerFunc {
 		if c.Writer.Status() == 200 || c.Writer.Status() == 201 {
 			SuccessCount.WithLabelValues(path, status).Inc()
 		}
+		duration := time.Since(start).Seconds()
+		RequestDuration.WithLabelValues(path, status).Observe(duration)
 
 	}
 }
